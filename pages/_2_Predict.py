@@ -4,6 +4,8 @@ import joblib
 import json
 from utils.pdf_export import export_prediction_to_pdf
 from utils.style import set_bg_from_local
+from utils.chatbot_ui import render_chat_ui
+
 
 # Set background
 set_bg_from_local("assets/predict_bg.png")
@@ -32,7 +34,7 @@ col1, col2 = st.columns(2)
 
 def get_input(label, key, default, is_visible=True, help_text=""):
     if is_visible:
-        with col1 if key in ["Pregnancies", "BloodPressure", "SkinThickness", "BMI"] else col2:
+        with col1 if key in ["Pregnancies", "BloodPressure", "Weight", "BMI", "Age"] else col2:
             return st.number_input(
                 f"{label}", min_value=0.0, value=float(default), step=1.0,
                 key=f"input_{key}", help=help_text
@@ -41,8 +43,7 @@ def get_input(label, key, default, is_visible=True, help_text=""):
         return float(median_values[key])
 
 # --- Input fields ---
-pregnancies = get_input("Pregnancies", "Pregnancies", 1,
-                        help_text="Number of times you have been pregnant")
+
 
 glucose = get_input("Glucose Level", "Glucose", 120,
                     help_text="Plasma glucose level in mg/dL (Normal < 140)")
@@ -56,14 +57,26 @@ skin_thickness = get_input("Skin Thickness", "SkinThickness", 20, is_provider,
 insulin = get_input("Insulin Level", "Insulin", 80, is_provider,
                     help_text="2-Hour serum insulin in mu U/mL")
 
-bmi = get_input("BMI", "BMI", 25.0,
-                help_text="Body Mass Index (kg/m²). Normal: 18.5–24.9")
+if is_provider:
+    bmi = get_input("BMI", "BMI", 25.0,
+                    help_text="Body Mass Index (kg/m²). Normal: 18.5–24.9")
+else:
+    weight = get_input("Weight (kg)", "Weight", 70.0)
+    height_cm = get_input("Height (cm)", "Height", 170.0)
+    height_m = height_cm / 100
+    bmi = round(weight / (height_m ** 2), 2)
+    # st.markdown(f"ℹ️ Calculated BMI: **{bmi}** kg/m²")
+
+
 
 dpf = get_input("Diabetes Pedigree Function", "DiabetesPedigreeFunction", 0.5, is_provider,
                 help_text="Genetic likelihood of diabetes (0 to 2)")
 
 age = get_input("Age", "Age", 30,
                 help_text="Age in years")
+
+pregnancies = get_input("Pregnancies (if applicable)", "Pregnancies", 1,
+                        help_text="Number of times you have been pregnant")
 
 st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -91,3 +104,5 @@ if st.button("🔍 Predict", key="predict_btn"):
         mime="application/pdf",
         key="download_pdf"
     )
+  
+render_chat_ui()
