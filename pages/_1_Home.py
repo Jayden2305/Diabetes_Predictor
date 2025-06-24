@@ -12,28 +12,103 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- WELCOME CARD ---
+# st.markdown("""
+# <div style='display: flex; justify-content: center; margin-top: 2em;'>
+#     <div style='max-width: 850px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+#         <p style='font-size: 1.3em; text-align: justify;'>
+#             This app uses a machine learning model trained on a real diabetes dataset to estimate your risk of developing diabetes based on health parameters.
+#         </p>
+#         <ul style='font-size: 1.1em; line-height: 1.6;'>
+#             <li>🤰 <b>Pregnancies</b>: Number of pregnancies (for female patients).</li>
+#             <li>🩸 <b>Glucose</b>: Plasma glucose concentration (mg/dL).</li>
+#             <li>💓 <b>Blood Pressure</b>: Diastolic blood pressure (mmHg).</li>
+#             <li>📏 <b>BMI</b>: Body Mass Index (kg/m²).</li>
+#         </ul>
+
+        
+#     </div>
+# </div>
+# """, unsafe_allow_html=True)
+
 st.markdown("""
+<style>
+.card-container {
+    max-width: 850px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-container:hover {
+    transform: scale(1.015);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+</style>
+
 <div style='display: flex; justify-content: center; margin-top: 2em;'>
-    <div style='max-width: 850px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+    <div class='card-container'>
         <p style='font-size: 1.3em; text-align: justify;'>
-            This app uses a machine learning model trained on a real diabetes dataset to estimate your risk of developing diabetes based on health parameters.
+            This app uses a machine learning model trained on a real diabetes dataset to estimate your risk of developing diabetes based on health parameters. Good luck!
         </p>
         <ul style='font-size: 1.1em; line-height: 1.6;'>
-            <li><b>Pregnancies</b>: Number of pregnancies (for female patients).</li>
-            <li><b>Glucose</b>: Plasma glucose concentration (mg/dL).</li>
-            <li><b>Blood Pressure</b>: Diastolic blood pressure (mmHg).</li>
-            <li><b>BMI</b>: Body Mass Index (kg/m²).</li>
+            <li>🤰 <b>Pregnancies</b>: Number of pregnancies (for female patients).</li>
+            <li>🩸 <b>Glucose</b>: Plasma glucose concentration (mg/dL).</li>
+            <li>💓 <b>Blood Pressure</b>: Diastolic blood pressure (mmHg).</li>
+            <li>📏 <b>BMI</b>: Body Mass Index (kg/m²).</li>
         </ul>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<br><br>", unsafe_allow_html=True)
+
+# st.markdown("<br><br>", unsafe_allow_html=True)
 
 # --- User Role Selection ---
-user_type = st.selectbox("👤 Who are you?", ["Normal User", "Healthcare Provider"])
-st.session_state["user_role"] = user_type
+# Inject custom CSS for button hover effect
+st.markdown("""
+<style>
+/* Style the Streamlit default button */
+.stButton > button {
+    background-color: white;
+    color: black;
+    padding: 0.7em 1.5em;
+    font-size: 1.1em;
+    border: 2px solid #3f51b5;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
 
-if st.button("Proceed to Prediction ➡️"):
-    st.switch_page("pages/_2_Predict.py")
+.stButton > button:hover {
+    background-color: #3f51b5;
+    color: white;
+    transform: scale(1.02);
+    cursor: pointer;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("""
+    <h2 style='text-align: center;'>👥 Select Your Role</h2>
+    <p style='text-align: center; font-size: 1.1em; color: black;'>Choose your role to proceed with the prediction</p>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    user_type = st.selectbox("👤 Who are you?", ["Normal User", "Healthcare Provider"])
+    st.session_state["user_role"] = user_type
+
+    if st.button("➡️ Proceed to Prediction", use_container_width=True):
+        st.switch_page("pages/_2_Predict.py")
+
+
+st.markdown("""
+    <hr style='margin-top: 7em;'>
+    <div style='text-align: center; color: gray; font-size: 0.9em;'>
+        Made with ❤️ using Streamlit · © 2025 Diabetes Predictor
+    </div>
+""", unsafe_allow_html=True)
 
