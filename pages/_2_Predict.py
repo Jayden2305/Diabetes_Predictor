@@ -81,6 +81,29 @@ pregnancies = get_input("Pregnancies (if applicable)", "Pregnancies", 1,
 st.markdown("<hr>", unsafe_allow_html=True)
 
 # --- Prediction ---
+st.markdown("""
+<style>
+/* Style the Streamlit default button */
+.stButton > button {
+    background-color: white;
+    color: black;
+    padding: 0.7em 1.5em;
+    font-size: 1.1em;
+    border: 2px solid #3f51b5;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.stButton > button:hover {
+    background-color: #3f51b5;
+    color: white;
+    transform: scale(1.02);
+    cursor: pointer;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 if st.button("🔍 Predict", key="predict_btn"):
     input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness,
                             insulin, bmi, dpf, age]])
@@ -106,3 +129,4 @@ if st.button("🔍 Predict", key="predict_btn"):
     )
   
 render_chat_ui()
+
