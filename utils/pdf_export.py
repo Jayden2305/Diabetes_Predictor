@@ -1,41 +1,82 @@
+
+
 from fpdf import FPDF
-import datetime
 from io import BytesIO
+import datetime
+
+class PDFWithHeaderFooter(FPDF):
+    def header(self):
+        self.image("assets/header.png", x=0, y=0, w=210)  # Full A4 width
+        self.set_y(30)
+
+    def footer(self):
+        self.set_y(-20)
+        self.image("assets/footer.png", x=0, y=self.get_y(), w=210)
 
 def export_prediction_to_pdf(role, inputs, risk, prob):
-    pdf = FPDF()
+    pdf = PDFWithHeaderFooter()
     pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_auto_page_break(auto=True, margin=25)
 
-    pdf.set_font("Arial", 'B', 16)
+    # pdf.set_font("Arial", 'B', 16)
+    # pdf.ln(9)
+    # pdf.cell(0, 10, "Diabetes Risk Prediction Report", ln=True, align='C')
+
+    pdf.set_text_color(0, 51, 102)  # Dark blue (RGB)
+    pdf.set_font("Arial", 'B', 22)  # Increased from 16 to 18
+    pdf.ln(9)
     pdf.cell(0, 10, "Diabetes Risk Prediction Report", ln=True, align='C')
+    pdf.set_text_color(0, 0, 0)  # Reset color back to black after title
 
+
+    # Summary Section
     pdf.set_font("Arial", size=12)
     pdf.ln(10)
-    pdf.cell(0, 10, f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True)
-    pdf.cell(0, 10, f"User Role: {role}", ln=True)
+    summary = f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}    |    User Role: {role}"
+    pdf.cell(0, 10, summary, ln=True)
 
+    pdf.set_font("Arial", 'B', 14)
+    pdf.ln(8)
+    pdf.cell(0, 10, "Prediction Result:", ln=True)
+    pdf.set_font("Arial", size=12)
+    if risk == "High Risk":
+        pdf.set_text_color(220, 50, 50)
+    else:
+        pdf.set_text_color(50, 150, 50)
+    pdf.cell(0, 10, f"{risk} (Confidence: {prob*100:.2f}%)", ln=True)
+    pdf.set_text_color(0, 0, 0)
+
+    # Input Data in Two Columns
     pdf.ln(10)
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "Input Data:", ln=True)
+    pdf.cell(0, 10, "Data Received:", ln=True)
     pdf.set_font("Arial", size=12)
 
     feature_names = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
                      "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]
 
-    for name, value in zip(feature_names, inputs):
-        pdf.cell(0, 10, f"{name}: {value}", ln=True)
+    col1_x = 15
+    col2_x = 110
+    y_start = pdf.get_y()
+    row_height = 8
 
-    pdf.ln(10)
+    for i, (name, value) in enumerate(zip(feature_names, inputs)):
+        x = col1_x if i < len(feature_names) / 2 else col2_x
+        y = y_start + (i % (len(feature_names) // 2)) * row_height
+        pdf.set_xy(x, y)
+        pdf.cell(90, row_height, f"{name}: {value}", ln=0)
+
+    pdf.set_y(y + row_height + 5)
+
+    # Optional interpretation text
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "Prediction Result:", ln=True)
+    pdf.ln(5)
+    pdf.cell(0, 10, "Interpretation:", ln=True)
     pdf.set_font("Arial", size=12)
-    pdf.set_text_color(220, 50, 50) if risk == "High Risk" else pdf.set_text_color(50, 150, 50)
-    pdf.cell(0, 10, f"{risk} (Confidence: {prob*100:.2f}%)", ln=True)
+    pdf.multi_cell(0, 8, "This prediction is based on health metrics you entered. Please consult a healthcare professional for a full diagnosis and treatment plan.")
 
-    # Output as bytes
-    pdf_buffer = BytesIO()
+    # Export to PDF
     pdf_output = pdf.output(dest='S').encode('latin1')
     return BytesIO(pdf_output)
-    pdf_buffer.seek(0)
-    return pdf_buffer
+
+
