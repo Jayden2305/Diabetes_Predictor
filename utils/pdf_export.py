@@ -1,5 +1,3 @@
-
-
 from fpdf import FPDF
 from io import BytesIO
 import datetime
@@ -10,13 +8,13 @@ class PDFWithHeaderFooter(FPDF):
         self.set_y(30)
 
     def footer(self):
-        self.set_y(-20)
+        self.set_y(-5)
         self.image("assets/footer.png", x=0, y=self.get_y(), w=210)
 
-def export_prediction_to_pdf(role, inputs, risk, prob):
+def export_prediction_to_pdf(role, inputs, risk, prob, patient_name, weight, height):
     pdf = PDFWithHeaderFooter()
     pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=25)
+    pdf.set_auto_page_break(auto=True, margin=30)
 
     # pdf.set_font("Arial", 'B', 16)
     # pdf.ln(9)
@@ -35,6 +33,13 @@ def export_prediction_to_pdf(role, inputs, risk, prob):
     summary = f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}    |    User Role: {role}"
     pdf.cell(0, 10, summary, ln=True)
 
+    # Patient Information
+    pdf.set_font("Arial", 'B', 14)
+    pdf.ln(6)
+    pdf.cell(0, 10, "Patient Information:", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, f"Name: {patient_name}", ln=True)
+
     pdf.set_font("Arial", 'B', 14)
     pdf.ln(8)
     pdf.cell(0, 10, "Prediction Result:", ln=True)
@@ -52,15 +57,27 @@ def export_prediction_to_pdf(role, inputs, risk, prob):
     pdf.cell(0, 10, "Data Received:", ln=True)
     pdf.set_font("Arial", size=12)
 
-    feature_names = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
-                     "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]
+    feature_names = [
+    ("Weight (kg)", weight),
+    ("Height (cm)", height),
+    ("Pregnancies", inputs[0]),
+    ("Glucose", inputs[1]),
+    ("BloodPressure", inputs[2]),
+    ("SkinThickness", inputs[3]),
+    ("Insulin", inputs[4]),
+    ("BMI", inputs[5]),
+    ("DiabetesPedigreeFunction", inputs[6]),
+    ("Age", inputs[7]),
+]
+
 
     col1_x = 15
     col2_x = 110
     y_start = pdf.get_y()
     row_height = 8
 
-    for i, (name, value) in enumerate(zip(feature_names, inputs)):
+    for i, (name, value) in enumerate(feature_names):
+
         x = col1_x if i < len(feature_names) / 2 else col2_x
         y = y_start + (i % (len(feature_names) // 2)) * row_height
         pdf.set_xy(x, y)
@@ -69,6 +86,9 @@ def export_prediction_to_pdf(role, inputs, risk, prob):
     pdf.set_y(y + row_height + 5)
 
     # Optional interpretation text
+    if pdf.get_y() > 230:  # adjust threshold as needed
+        pdf.add_page()
+
     pdf.set_font("Arial", 'B', 14)
     pdf.ln(5)
     pdf.cell(0, 10, "Interpretation:", ln=True)
