@@ -11,7 +11,6 @@ from utils.chatbot_ui import render_chat_ui
 set_bg_from_local("assets/predict_bg.png")
 
 
-
 # --- Load model and median values ---
 model = joblib.load("model/model.pkl")
 with open("model/median_values.json", "r") as f:
@@ -21,6 +20,9 @@ with open("model/median_values.json", "r") as f:
 st.markdown("<h2 style='font-size: 48px;'>🧪 Diabetes Risk Assessment</h2>", unsafe_allow_html=True)
 st.markdown("#### Fill in the correct values to enable accurate predictions.")
 
+# --- Patient Name Input ---
+st.markdown("### 🧍 Patient Information")
+patient_name = st.text_input("Patient Full Name *", key="patient_name")
 
 
 # --- Get role from session state ---
@@ -104,12 +106,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-if st.button("🔍 Predict", key="predict_btn"):
-    input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness,
-                            insulin, bmi, dpf, age]])
+# if st.button("🔍 Predict", key="predict_btn"):
+#     input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness,
+#                             insulin, bmi, dpf, age]])
 
-    prediction = model.predict(input_data)[0]
-    prob = model.predict_proba(input_data)[0][prediction]
+#     prediction = model.predict(input_data)[0]
+#     prob = model.predict_proba(input_data)[0][prediction]
+
+if st.button("🔍 Predict", key="predict_btn"):
+    if not patient_name.strip():
+        st.warning("⚠️ Please enter the patient's full name before predicting.")
+        st.stop()
+    else:
+        input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness,
+                                insulin, bmi, dpf, age]])
+
+        prediction = model.predict(input_data)[0]
+        prob = model.predict_proba(input_data)[0][prediction]
 
     if prediction == 1:
         st.error(f"⚠️ High Risk of Diabetes\nConfidence: {prob*100:.2f}%")
@@ -119,7 +132,7 @@ if st.button("🔍 Predict", key="predict_btn"):
         risk = "Low Risk"
 
     # Export to PDF
-    pdf_data = export_prediction_to_pdf(role, input_data.flatten(), risk, prob)
+    pdf_data = export_prediction_to_pdf(role, input_data.flatten(), risk, prob, patient_name, weight, height_cm)
     st.download_button(
         label="📄 Download Prediction Report",
         data=pdf_data,
@@ -129,4 +142,9 @@ if st.button("🔍 Predict", key="predict_btn"):
     )
   
 render_chat_ui()
+
+
+    
+  
+
 
